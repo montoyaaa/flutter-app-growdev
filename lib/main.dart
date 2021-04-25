@@ -33,7 +33,7 @@ class MyApp extends StatelessWidget {
       initialRoute: '/login',
       routes: {
         '/login': (_) => LoginPage(title: 'Login'),
-        '/home': (_) => MyHomePage(title: 'Bem vindo'),
+        '/home': (_) => MyHomePage(title: 'Bem vindo à Lista de usuários'),
         '/form': (_) => UserFormPage(
               title: 'Novo',
             ),

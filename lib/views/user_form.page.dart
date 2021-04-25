@@ -9,11 +9,13 @@ import 'package:brasil_fields/brasil_fields.dart';
 import 'package:flutter_app/controllers/user_form.controller.dart';
 import 'package:flutter_app/widgets/input.widget.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter_app/models/user.model.dart';
 
 class UserFormPage extends StatefulWidget {
-  UserFormPage({Key? key, this.title}) : super(key: key);
+  UserFormPage({Key? key, this.title, this.user}) : super(key: key);
 
   final String? title;
+  final User? user;
 
   @override
   _UserFormPageState createState() => _UserFormPageState();
@@ -25,6 +27,7 @@ class _UserFormPageState extends State<UserFormPage> {
   final picker = ImagePicker();
   File? imageFile;
   final cepController = TextEditingController();
+  User? user = User.empty();
   String address = '';
 
   bool isLoadingCep = false;
@@ -40,22 +43,37 @@ class _UserFormPageState extends State<UserFormPage> {
   String? uf;
   String? pais;
 
+  @override
+  void initState() {
+    super.initState();
+    if (widget.user != null) {
+      user = widget.user;
+      cepController.text = widget.user!.cep!;
+    }
+  }
+
+  void changePhoto() async {
+    var pickedFile = await picker.getImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() => user?.pathImage = pickedFile.path);
+    }
+  }
+
   void doSubmit(ctx) {
     if (!formKey.currentState!.validate()) return;
 
     formKey.currentState?.save();
 
     final isSubmitted = Service().doSubmit(
-        nome: nome!,
-        email: email!,
-        cpf: cpf!,
-        cep: cep!,
-        rua: rua!,
-        numero: numero!,
-        bairro: bairro!,
-        cidade: cidade!,
-        uf: uf!,
-        pais: pais!);
+      user: user!,
+      nome: nome!,
+      email: email!,
+      cpf: cpf!,
+      cep: cep!,
+      address: address,
+      image: '$imageFile!.path',
+    );
 
     if (!isSubmitted) {
       showFailureSubmit();
@@ -100,12 +118,6 @@ class _UserFormPageState extends State<UserFormPage> {
     );
   }
 
-  void changePhoto() async {
-    var pickedFile = await picker.getImage(source: ImageSource.gallery);
-
-    setState(() => imageFile = File(pickedFile!.path));
-  }
-
   void getAddress() async {
     try {
       setState(() {
@@ -136,7 +148,6 @@ class _UserFormPageState extends State<UserFormPage> {
     }
   }
 
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
